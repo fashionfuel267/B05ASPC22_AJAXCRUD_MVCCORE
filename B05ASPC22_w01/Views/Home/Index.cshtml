@@ -1,0 +1,158 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <table id="tblds" class="table table-bordered">
+            <thead>
+                <tr>
+                    <td>Name</td>
+                    <td>Description</td>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+
+        </table>
+    </div>
+    <div class="col-md-6">
+
+        <form>
+            <div class="form-group">
+                <input type="hidden" id="txtid" />
+
+                <label for="exampleInputEmail1">Neame</label>
+                <input type="text" class="form-control" id="txtName" aria-describedby="emailHelp" placeholder="Enter email">
+                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword1">Description </label>
+                <input type="text" class="form-control" id="txtDescription" placeholder="Password">
+            </div>
+            
+            <button type="button" id="btnsave" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts{
+
+    <script>
+        $(document).ready(function(){
+            load()
+            $("#btnsave").innerText = "Save";
+            $("#btnsave").click(function(){
+                Saveorupdate();
+            })
+        })
+
+        function Saveorupdate() {
+            var diseases = {
+                Id: $("#txtid").val(),
+                Name: $("#txtName").val(),
+               Description: $("#txtDescription").val()
+            }
+            debugger;
+            console.log(diseases)
+
+            $.ajax({
+
+                url: '/Home/Save',
+                type: 'POST', 
+                contentType: 'application/json',
+                data: JSON.stringify(diseases), success: function (response) {
+                    console.log(response)
+                    load();
+                    clearData()
+                    console.log("Success", response);
+                },
+                error: function (error) {
+                    console.log(error)
+                    load();
+                    clearData()
+                }
+                 
+            });
+        }
+        function clearData(){
+            $("#txtName").val(' '),
+                 $("#txtDescription").val(' ')
+            $("#txtid").val(' ')
+            $("#btnsave").innerText = "Save";
+        }
+        function Edit(id)
+        { 
+            $("#btnsave").innerText = "Update";
+
+            $.ajax({
+                type: "Get",
+                url: "/Home/Edit/" + id,
+
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (output) {
+                    console.log(output)
+                    $("#txtName").val(output.Name),
+                        $("#txtDescription").val(output.Description)
+                    $("#txtid").val(output.Id)
+                },
+                error: function (err) {
+                    alert("Error while inserting data");
+                    console.log(err)
+
+                }
+            });
+        }
+        function Delete(id) {
+            $.ajax({
+                type: "Get",
+                url: "/Home/Delete/"+id,
+
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (output) {
+                    console.log(output)
+                    load();
+                },
+                error: function (err) {
+                    alert("Error while inserting data");
+                    console.log(err)
+
+                }
+            });
+        }
+        function load(){
+            $.ajax({
+                type: "Get",
+                url: "/Home/GetDisease", 
+               
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (output) {
+                   console.log(output)
+                    let tr = "";
+                    $.each(output, function (i, v) {
+                            tr +="<tr><td>" +v.Name+ "</td><td>"
+                            +v.Description+"</td>"
+                            +"<td><button onclick='Edit("+v.Id+")'>Edit</button>       "
+                            + " <button onclick='Delete(" + v.Id + ")'>Delete</button>      </td></tr>"
+                    })
+                    $("#tblds tbody").empty();
+                    $("#tblds tbody").append(tr);
+                },
+                error: function (err) {
+                    alert("Error while inserting data");
+                    console.log(err)
+
+                }
+            });
+        }
+    </script>
+}
